@@ -9,6 +9,9 @@ import userRoutes from "./routes/userRoutes.js";
 connectDB();
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true })); //this will allow us to send formData
+
 app.use("/api/users", userRoutes);
 
 app.get("/", (req, res) => res.send("server is live"));
