@@ -1,15 +1,38 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Form, Button, Row, Col } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
 import FormContainer from "../components/FormContainer";
+import { useLoginMutation } from "../slices/usersApiSlice";
+import { setCredentials } from "../slices/authSlice";
 
 export const LoginScreen = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPasssword] = useState("");
 
+	const navigate = useNavigate();
+	const dispatch = useDispatch();
+
+	const [login, { isLoading }] = useLoginMutation();
+
+	const { userInfo } = useSelector((state) => state.auth);
+
+	useEffect(() => {
+		if (userInfo) {
+			navigate("/");
+		}
+	}, [navigate, userInfo]);
+
 	const submitHandler = async (e) => {
 		e.preventDefault();
-		console.log("submit");
+
+		try {
+			const res = await login({ email, password }).unwrap(); //this will return the promise , so unwrap will get off that promise
+			dispatch(setCredentials({ ...res }));
+			navigate("/");
+		} catch (err) {
+			console.log(err?.data?.message || err.error);
+		}
 	};
 
 	return (
@@ -29,7 +52,7 @@ export const LoginScreen = () => {
 				<Form.Group className="my-2" controlId="password">
 					<Form.Label>Password</Form.Label>
 					<Form.Control
-						type="passwords"
+						type="password"
 						placeholder="Enter Password"
 						value={password}
 						onChange={(e) => setPasssword(e.target.value)}
